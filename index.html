@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Ollama Auto-Grader</title>
+
+    <style>
+        body {
+            background: #eef0f5;
+            padding: 30px;
+            max-width: 900px;
+            margin: auto;
+            font-family: Arial, sans-serif;
+        }
+        textarea, button, input[type="file"] {
+            width: 100%;
+            padding: 14px;
+            margin: 12px 0;
+            font-size: 16px;
+            border-radius: 6px;
+        }
+        button {
+            background: #4CAF50; 
+            color: white; 
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        #result {
+            margin-top: 25px;
+            font-size: 48px;
+            text-align: center;
+            padding: 25px;
+            border-radius: 12px;
+            background: white;
+            border: 2px solid #ddd;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+        }
+        th, td {
+            padding: 12px;
+            border: 1px solid #ccc;
+        }
+        th {
+            background: #ddd;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Ollama Auto-Grader</h1>
+
+    <!-- Manual Single-Grading Section -->
+    <label>Question:</label>
+    <textarea id="question" placeholder="Enter the question"></textarea>
+
+    <label>Student Answer:</label>
+    <textarea id="student" placeholder="Enter the student answer"></textarea>
+
+    <label>Expected Answer:</label>
+    <textarea id="expected" placeholder="Enter the expected answer"></textarea>
+
+    <button onclick="grade()">Grade</button>
+
+    <div id="result"></div>
+
+    <hr><br>
+
+    <!-- CSV Import / Batch Section -->
+
+    <h2>Batch Grading (CSV)</h2>
+
+    <input type="file" id="csvfile" accept=".csv">
+    <button onclick="loadCSV()">Load CSV</button>
+    <button onclick="exportCSV()">Download Results</button>
+    <button onclick="batchGrade()">Grade All Rows</button>
+
+    <table id="csvTable"></table>
+
+<script>
+let csvData = [];
+
+// ----------------------------------------
+// SINGLE QUESTION GRADING
+// ----------------------------------------
+
+async function grade() {
+    const question = document.getElementById("question").value.trim();
+    const student = document.getElementById("student").value.trim();
+    const expected = document.getElementById("expected").value.trim();
+
+    if (!question || !student || !expected) {
+        const box = document.getElementById("result");
+        box.innerText = "Missing fields!";
+        box.style.background = "#ffeecc";
+        box.style.color = "#663300";
+        return;
+    }
+
+    const prompt = `[${question}] {${student}} <expected: ${expected}>`;
+
+    try {
+        const response = await fetch("http://localhost:8080/grade", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                model: "alberttalkstech/problemChecker",
+                prompt: prompt,
+                stream: false
+            })
+        });
+
+        const data = await response.json();
+        const resultText = data.response.trim();
+        const box = document.getElementById("result");
+
+        let num = parseInt(resultText);
+        if (isNaN(num)) {
+            box.innerText = resultText;
+            return;
+        }
+
+        box.innerText = num;
+
+        if (num >= 70) {
+            box.style.background = "#c8f7c5";
+            box.style.color = "#1d7a1f";
+        } else if (num >= 40) {
+            box.style.background = "#fff3cd";
+            box.style.color = "#856404";
+        } else {
+            box.style.background = "#f7c5c5";
+            box.style.color = "#7a1d1d";
+        }
+
+    } catch (err) {
+        document.getElementById("result").innerText = "Fetch error: " + err;
+    }
+}
+
+// ----------------------------------------
+// CSV LOADING
+// ----------------------------------------
+
+function loadCSV() {
+    const file = document.getElementById("csvfile").files[0];
+    if (!file) return alert("No file selected");
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const rows = e.target.result.split("\n").map(r => r.split(","));
+        
+        csvData = rows.map(r => ({
+            question: r[0],
+            student: r[1],
+            expected: r[2],
+            score: ""
+        }));
+
+        renderTable();
+    };
+    reader.readAsText(file);
+}
+
+// ----------------------------------------
+// RENDER CSV TABLE
+// ----------------------------------------
+
+function renderTable() {
+    const table = document.getElementById("csvTable");
+    table.innerHTML = `
+        <tr>
+            <th>Question</th>
+            <th>Student Answer</th>
+            <th>Expected</th>
+            <th>Score</th>
+        </tr>
+    `;
+
+    csvData.forEach(row => {
+        table.innerHTML += `
+            <tr>
+                <td>${row.question}</td>
+                <td>${row.student}</td>
+                <td>${row.expected}</td>
+                <td>${row.score}</td>
+            </tr>
+        `;
+    });
+}
+
+// ----------------------------------------
+// BATCH GRADING
+// ----------------------------------------
+
+async function batchGrade() {
+    for (let row of csvData) {
+
+        const prompt = `[${row.question}] {${row.student}} <expected: ${row.expected}>`;
+
+        const response = await fetch("http://localhost:8080/grade", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                model: "alberttalkstech/problemChecker",
+                prompt: prompt,
+                stream: false
+            })
+        });
+
+        const data = await response.json();
+        row.score = data.response.trim();
+    }
+
+    renderTable();
+}
+
+// ----------------------------------------
+// CSV EXPORT
+// ----------------------------------------
+
+function exportCSV() {
+    let csvContent = "question,student,expected,score\n";
+
+    csvData.forEach(r => {
+        csvContent += `${r.question},${r.student},${r.expected},${r.score}\n`;
+    });
+
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const a = document.createElement("a");
+
+    a.href = URL.createObjectURL(blob);
+    a.download = "results.csv";
+    a.click();
+}
+</script>
+
+</body>
+</html>
+

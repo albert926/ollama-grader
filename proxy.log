@@ -1,0 +1,32 @@
+Python CORS proxy running at http://localhost:8080
+ * Serving Flask app 'proxy'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8080
+ * Running on http://192.168.1.13:8080
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [17/Nov/2025 18:49:15] "OPTIONS /grade HTTP/1.1" 200 -
+127.0.0.1 - - [17/Nov/2025 18:49:16] "POST /grade HTTP/1.1" 200 -
+127.0.0.1 - - [17/Nov/2025 18:49:16] "POST /grade HTTP/1.1" 200 -
+127.0.0.1 - - [17/Nov/2025 18:49:16] "POST /grade HTTP/1.1" 200 -
+127.0.0.1 - - [17/Nov/2025 18:49:16] "POST /grade HTTP/1.1" 200 -
+127.0.0.1 - - [17/Nov/2025 18:49:17] "POST /grade HTTP/1.1" 200 -
+127.0.0.1 - - [17/Nov/2025 18:49:17] "POST /grade HTTP/1.1" 200 -
+127.0.0.1 - - [17/Nov/2025 18:49:17] "POST /grade HTTP/1.1" 200 -
+127.0.0.1 - - [18/Nov/2025 07:15:06] "OPTIONS /grade HTTP/1.1" 200 -
+127.0.0.1 - - [18/Nov/2025 07:15:12] "POST /grade HTTP/1.1" 200 -
+127.0.0.1 - - [18/Nov/2025 07:15:12] "OPTIONS /grade HTTP/1.1" 200 -
+127.0.0.1 - - [18/Nov/2025 07:15:12] "POST /grade HTTP/1.1" 200 -
+127.0.0.1 - - [18/Nov/2025 07:15:13] "POST /grade HTTP/1.1" 200 -
+127.0.0.1 - - [18/Nov/2025 07:15:13] "POST /grade HTTP/1.1" 200 -
+127.0.0.1 - - [18/Nov/2025 07:15:13] "POST /grade HTTP/1.1" 200 -
+127.0.0.1 - - [18/Nov/2025 07:15:13] "POST /grade HTTP/1.1" 200 -
+127.0.0.1 - - [18/Nov/2025 07:15:13] "POST /grade HTTP/1.1" 200 -
+127.0.0.1 - - [18/Nov/2025 07:15:13] "POST /grade HTTP/1.1" 200 -
+127.0.0.1 - - [18/Nov/2025 07:15:13] "POST /grade HTTP/1.1" 200 -
+127.0.0.1 - - [18/Nov/2025 07:15:14] "POST /grade HTTP/1.1" 200 -
+127.0.0.1 - - [18/Nov/2025 07:15:14] "POST /grade HTTP/1.1" 200 -
+127.0.0.1 - - [18/Nov/2025 07:15:14] "POST /grade HTTP/1.1" 200 -
+127.0.0.1 - - [18/Nov/2025 07:15:14] "POST /grade HTTP/1.1" 200 -
+127.0.0.1 - - [18/Nov/2025 07:15:14] "POST /grade HTTP/1.1" 200 -
